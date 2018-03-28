@@ -6,22 +6,43 @@ import {
   Type,
   NavigationScreenProp
 } from "react-navigation/src/TypeDefinition";
+import { getCoordinates } from "./GeolocationService";
 
 type Props = {
   navigation: NavigationScreenProp<*>
 };
 
-class CityListScreen extends Component<{}> {
+type State = {
+  data: *[]
+};
+
+class CityListScreen extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { data: CITIES };
+  }
+
+  componentDidMount() {
+    getCoordinates().then(({ latitude, longitude }) => {
+      CITIES.unshift({
+        name: "現在地",
+        en: "",
+        latitude,
+        longitude
+      });
+      this.setState({ data: CITIES });
+    });
+  }
+
   onPress(item: *) {
-    console.log("onPress props", this.props);
+    console.log(item);
     const { navigation } = this.props;
     navigation.navigate("Weather", { city: item });
-    console.log("onPress", item);
   }
   render() {
     return (
       <FlatList
-        data={CITIES}
+        data={this.state.data}
         keyExtractor={item => item.en}
         renderItem={({ item }) => (
           <TouchableOpacity
